@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# local Claude Code settings (machine-specific, don't share)
+.claude/
+
+# Vercel
+.vercel/
+
+# build/output & archives
+node_modules/
+*.zip

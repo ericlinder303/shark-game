@@ -166,7 +166,8 @@
             : null,
           el("button", { class: "btn " + (saved ? "btn-ghost" : "btn-primary"), onclick: saved ? confirmNewGame : startNew }, saved ? "New Game" : "Start Fishing"),
         ),
-        el("p", { class: "hint" }, "Hold to reel · release during a surge so the line doesn't snap")
+        el("p", { class: "hint" }, "Hold to reel · release during a surge so the line doesn't snap"),
+        el("p", { class: "credit" }, "Designed by George Linder")
       )
     );
   }

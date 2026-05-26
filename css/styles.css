@@ -63,7 +63,8 @@ body {
 .btn.wide { width: 100%; margin-top: 6px; }
 
 /* ---- title ----------------------------------------------------------- */
-.title-screen { justify-content: center; align-items: center; text-align: center; gap: 8px; }
+.title-screen { position: relative; justify-content: center; align-items: center; text-align: center; gap: 8px; }
+.credit { position: absolute; left: 0; right: 0; bottom: max(env(safe-area-inset-bottom), 14px); margin: 0; text-align: center; font-size: 12px; color: var(--muted); letter-spacing: 0.3px; }
 .title-art { width: min(420px, 86vw); }
 .title-art svg { width: 100%; display: block; }
 .title { font-size: clamp(36px, 11vw, 72px); margin: 0; letter-spacing: 3px; text-shadow: 0 4px 0 rgba(0,0,0,0.25); }

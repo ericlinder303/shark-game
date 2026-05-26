@@ -17,6 +17,15 @@
   const { makeImage, aspect } = window.SpriteKit;
   const sfx = (name, ...a) => { const S = window.Sfx; if (S && S[name]) S[name](...a); };
 
+  // flavor for a random (non-snap) escape — the fish fights free on its own
+  const ESCAPE_LINES = [
+    "It threw the hook and bolted!",
+    "It bit clean through the line!",
+    "It thrashed loose and vanished!",
+    "It shook free with one last run!",
+  ];
+  const pickEscapeLine = () => ESCAPE_LINES[(Math.random() * ESCAPE_LINES.length) | 0];
+
   const PHASE = { AIM: "aim", HOOK: "hook", FIGHT: "fight", LANDING: "landing", DONE: "done" };
 
   const CATCH_R = 52;     // how close the cage center must be to a fish to snag it
@@ -39,11 +48,12 @@
 
     // fight state
     progress: 0, tension: 0, tensionLimit: 100,
-    reeling: false, mode: "calm", modeTimer: 0, surging: false,
+    reeling: false, mode: "calm", modeTimer: 0, surging: false, surgeCount: 0,
     // per-cast tuning
     calmReelGain: 22, calmReelTension: 10, surgeReelTension: 50,
     surgeReleaseLoss: 4, recovery: 24, calmDecay: 1,
     calmDur: 2, surgeDur: 1, tellDur: 0.3,
+    escapeBase: 0, escapeTensionFactor: 0.03,
 
     landTimer: 0,
     t: 0, last: 0, bubbles: [], shakeUntil: 0,
@@ -227,8 +237,14 @@
     F.tellDur = Math.max(0.12, 0.34 - d * 0.022); // ...with less and less warning
     F.tensionLimit = 100 * (F.perks.tension_grace ? 1.10 : 1);
 
+    // Random "throws the hook" chance, rolled at each surge. Rare & forgiving:
+    // ~0 for small fish, scales with difficulty, eased by a roomier cage, and
+    // nudged up by current line tension so careful play still helps.
+    F.escapeBase = d * 0.003 * (1 - margin * 0.04);
+    F.escapeTensionFactor = 0.03;
+
     F.progress = 0; F.tension = 0; F.reeling = false;
-    F.mode = "calm"; F.modeTimer = 0.8; F.surging = false;
+    F.mode = "calm"; F.modeTimer = 0.8; F.surging = false; F.surgeCount = 0;
   }
 
   // ---- update -----------------------------------------------------------
@@ -271,7 +287,20 @@
     F.modeTimer -= dt;
     if (F.modeTimer <= 0) {
       if (F.mode === "calm") { F.mode = "tell"; F.modeTimer = F.tellDur; F.shakeUntil = F.t + F.tellDur + 0.1; }
-      else if (F.mode === "tell") { F.mode = "surge"; F.modeTimer = F.surgeDur * (0.8 + Math.random() * 0.5); sfx("surge"); }
+      else if (F.mode === "tell") {
+        F.mode = "surge"; F.modeTimer = F.surgeDur * (0.8 + Math.random() * 0.5); F.surgeCount++;
+        // random "throws the hook": rolled per surge, but never on the first
+        // surge and never once it's almost landed (protected final stretch)
+        const escChance = F.escapeBase + (F.tension / F.tensionLimit) * F.escapeTensionFactor;
+        if (F.surgeCount > 1 && F.progress < 85 && Math.random() < escChance) {
+          F.reeling = false; sfx("stopReel"); sfx("splash", 0.9);
+          splashAt(F.W * 0.5, F.H * WATER_TOP_F + 34, 14, 1.1);
+          setPhase(PHASE.DONE);
+          if (F.cb.onResult) F.cb.onResult({ caught: false, fish: F.fish, reason: "shake", message: pickEscapeLine() });
+          return;
+        }
+        sfx("surge");
+      }
       else { F.mode = "calm"; F.modeTimer = F.calmDur * (0.65 + Math.random() * 0.6); }
     }
     F.surging = F.mode === "surge";
@@ -293,7 +322,7 @@
       F.reeling = false; sfx("stopReel"); sfx("snap");
       splashAt(F.W * 0.5, surfaceY, 10, 0.9);
       setPhase(PHASE.DONE);
-      if (F.cb.onResult) F.cb.onResult({ caught: false, fish: F.fish });
+      if (F.cb.onResult) F.cb.onResult({ caught: false, fish: F.fish, reason: "snap" });
       return;
     }
     if (F.progress >= 100) {

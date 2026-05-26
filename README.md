@@ -30,6 +30,7 @@ Progress saves automatically to the browser's `localStorage`.
    - You gain line **only while reeling in the calm**, and even the calm steadily raises **LINE TENSION** — so you must **pulse** the reel, not just hold it. Holding continuously will snap the line on anything bigger than an anchovy.
    - The fish briefly telegraphs a run ("⚠ it's about to run…"), then **SURGES** (red "LET GO!"). Reeling through a surge spikes tension and snaps the line almost instantly. **Release** during surges and let it run; tension falls quickly so you can resume in the next calm.
    - Harder fish surge more often, run longer, and give less warning. A great white is ~20 seconds of constant pulse-and-release; a sardine is forgiving.
+   - Even with perfect play, a fish can occasionally **throw the hook and get away** during a run — rare for small fish, up to ~1 in 5 for a great white, and never once it's almost landed. Tuned in `escapeBase` in `configureFight()` (`js/fishing.js`).
 4. **Catch card** shows the species, description, difficulty, length, and points earned.
 5. Spend **coins** on bigger **cages** (🛒) to hold bigger fish; earn **XP** to unlock new **locations** (🗺️). Your **catch log** (📖) tracks every species.
 

@@ -491,7 +491,7 @@
     Tut.onTick(mode);
   }
 
-  function onResult({ caught, fish }) {
+  function onResult({ caught, fish, reason, message }) {
     dom.fightUI.classList.add("hidden");
 
     const beforeUnlocked = unlockedCount();
@@ -512,7 +512,7 @@
     checkAchievements(false); // award + banner any newly-earned goals
     Tut.onResult(caught);
 
-    showCatchCard(caught, fish, unlockedCount() > beforeUnlocked);
+    showCatchCard(caught, fish, unlockedCount() > beforeUnlocked, reason, message);
   }
 
   // floating "+points" text that drifts up and fades
@@ -546,10 +546,19 @@
   // Resume aiming with a fresh school (after a catch card / navigation).
   function resume() { window.Fishing.beginAim(); }
 
-  function showCatchCard(caught, fish, newlyUnlocked) {
+  function showCatchCard(caught, fish, newlyUnlocked, reason, message) {
     const isNew = caught && state.caught[fish.id] === 1;
+    const banner = caught
+      ? (fish.difficulty >= 9 ? "🏆 LEGENDARY CATCH!" : "✅ CATCH!")
+      : (reason === "snap" ? "💥 SNAP!" : "💨 It got away!");
+    // a random "shake free" escape isn't the player's fault — show its flavor
+    // line and a reassuring tip instead of the pulse-release coaching.
+    const desc = (!caught && reason === "shake" && message) ? message : fish.desc;
+    let tip = null;
+    if (!caught && reason === "shake") tip = "Sometimes they just shake free — that one wasn't on you.";
+    else if (!caught) tip = "Tip: stop reeling the instant it surges — even brief holds through a run snap the line.";
     const card = el("div", { class: "card catch-card " + (caught ? "win" : "lose") },
-      el("div", { class: "card-banner" }, caught ? (fish.difficulty >= 9 ? "🏆 LEGENDARY CATCH!" : "✅ CATCH!") : "💨 It got away!"),
+      el("div", { class: "card-banner" }, banner),
       caught
         ? el("div", { class: "card-art", html: svgMarkup(fish.sprite, fish.color) })
         : el("div", { class: "card-art faded", html: svgMarkup(fish.sprite, fish.color) }),
@@ -559,8 +568,8 @@
         statChip("Length", fish.length),
         statChip(caught ? "Earned" : "Worth", "🪙 " + fish.points)
       ),
-      el("p", { class: "card-desc" }, fish.desc),
-      !caught ? el("p", { class: "card-tip" }, "Tip: stop reeling the instant it surges — even brief holds through a run snap the line.") : null,
+      el("p", { class: "card-desc" }, desc),
+      tip ? el("p", { class: "card-tip" }, tip) : null,
       el("button", { class: "btn btn-primary", onclick: () => { sfx("click"); closeOverlay(); if (newlyUnlocked) showUnlockToast(); else resume(); } }, "Continue")
     );
     overlay(card, { onClose: () => { if (!newlyUnlocked) resume(); } });

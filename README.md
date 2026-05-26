@@ -90,6 +90,22 @@ in PNG/raster art without touching game logic: replace a sprite function so it r
 the image from a file path. Keep the same viewBox proportions (creatures face right; the
 renderer flips them).
 
+## Deploying (Vercel / any static host)
+
+This is a **pure static site with no build step**, so deploy it as static files:
+
+- **Framework Preset:** Other
+- **Build Command:** none (leave empty)
+- **Output Directory:** none (serves the repo root)
+- **Root Directory:** `./`
+- **Do _not_ add a `vercel.json`** — `cleanUrls`/`trailingSlash` crash `vercel build`
+  ("Cannot read properties of undefined (reading 'fsPath')") on a no-build project,
+  and clean URLs add nothing for a single `index.html`.
+
+Connected to Git, every push auto-deploys. The quickest one-off deploy is the CLI from
+this folder: `vercel --prod` (accept the defaults). Each player's progress is stored in
+their own browser (localStorage); there's no backend.
+
 ## Path to an iOS app
 
 The game is built to be wrappable with **Capacitor** (or Cordova) with no rewrite:
